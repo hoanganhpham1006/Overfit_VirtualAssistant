@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block page_content %}
+<div>
+  <div id='result' style="font-size:120px;">
+    Hãy nói gì đó..
+  </div>
+  <div id='response' style="font-size:60px;color:grey">
+    ...
+  </div>
+  <br>
+  <div id= 'record'>
+      <button onclick="startConverting()" class='btn btn-info btn-sm' id="re">record</button>
+  </div>
+
+  <script>
+      function chatbotResponse(lastUserMessage) {
+        talking = true;
+        botMessage = "noise"; //the default message
+        var form = new FormData();
+        form.append("message", lastUserMessage);
+        var settings = {
+          "async": false,
+          "crossDomain": true,
+          "url": "http://192.168.43.253:8000/api/nlp_api",
+          "type": "POST",
+          "headers": {
+              "Accept": "*/*",
+          },
+          "processData": false,
+          "contentType": false,
+          "mimeType": "multipart/form-data",
+          "data": form
+        }
+
+        $.ajax(settings).done(function (response) {
+          var res=document.getElementById('response');
+          botMessage = JSON.parse(response).data;
+          res.innerHTML=botMessage ;
+        });
+      }
+     function startConverting() {
+      document.getElementById("re").style.visibility = "hidden";   
+      var r=document.getElementById('result');
+      var spr=new webkitSpeechRecognition(); //Initialisation of web Kit
+        spr.continuous=true; //True if continous conversion is needed, false to stop transalation when paused 
+        spr.interimResults=true;
+        spr.lang='vi-VN'; // Set Input language
+        spr.start(); //Start Recording the voice
+        var ftr='';
+        var t;
+        spr.onresult=function(event){
+            var interimTranscripts='';
+            for(var i=event.resultIndex;i<event.results.length;i++)
+            {
+                var transcript=event.results[i][0].transcript;
+                transcript.replace("\n","<br>")
+                if(event.results[i].isFinal){
+                    ftr+=transcript;
+                }
+                else
+                interimTranscripts+=transcript;
+            }
+            r.innerHTML=ftr +interimTranscripts ;
+            clearTimeout(t);
+            t = setTimeout(function(){chatbotResponse(r.innerHTML.trim());console.log("sent"); ftr=""}, 1000);
+        };
+        spr.onerror=function(event){
+          clearTimeout(t);
+        };
+        spr.onend=function(event){
+          spr.start();
+        };
+    }
+    $(document).ready(startConverting());
+  </script>
+</div>
+{% endblock page_content %}
