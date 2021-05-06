@@ -39,7 +39,7 @@ dopamine-rl==2.0.5
 fakeredis==0.10.3
 fbmessenger==6.0.0
 Flask==1.1.1
-Flask-Cors==3.0.8
+Flask-Cors==3.0.9
 Flask-JWT-Simple==0.0.3
 future==0.17.1
 gast==0.2.2
